@@ -181,6 +181,17 @@ func TestBuildSources(t *testing.T) {
 		assert.Len(t, sources, 3)
 	})
 
+	t.Run("wire source", func(t *testing.T) {
+		entries := map[string]config.SourceEntry{
+			"w1": {Type: "wire", ListenAddr: ":15000"},
+		}
+
+		sources, err := buildSources(entries)
+		require.NoError(t, err)
+		require.Len(t, sources, 1)
+		assert.Equal(t, "wire", sources["w1"].Name())
+	})
+
 	t.Run("unknown type", func(t *testing.T) {
 		entries := map[string]config.SourceEntry{
 			"bad": {Type: "unknown"},
@@ -213,6 +224,17 @@ func TestBuildSinks(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, sinks, 1)
 		assert.Equal(t, "pcars1_udp", sinks["my_sink"].Sink.Name())
+	})
+
+	t.Run("wire sink", func(t *testing.T) {
+		entries := map[string]config.SinkEntry{
+			"w": {Type: "wire", Inputs: []string{"s1"}, TargetAddr: "127.0.0.1:15000"},
+		}
+
+		sinks, err := buildSinks(entries)
+		require.NoError(t, err)
+		require.Len(t, sinks, 1)
+		assert.Equal(t, "wire", sinks["w"].Sink.Name())
 	})
 
 	t.Run("json_stdout sink", func(t *testing.T) {

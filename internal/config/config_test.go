@@ -199,6 +199,40 @@ func TestConfig_Validate(t *testing.T) {
 			},
 		},
 		{
+			name: "valid wire source",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"w1": {Type: "wire", ListenAddr: ":15000"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "json_stdout", Inputs: []string{"w1"}}},
+			},
+		},
+		{
+			name: "wire source missing listen_addr",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"w1": {Type: "wire"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "json_stdout", Inputs: []string{"w1"}}},
+			},
+			wantErr: "listen_addr is required",
+		},
+		{
+			name: "valid wire sink",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "wire", Inputs: []string{"s1"}, TargetAddr: "127.0.0.1:15000"}},
+			},
+		},
+		{
+			name: "wire sink missing target_addr",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "wire", Inputs: []string{"s1"}}},
+			},
+			wantErr: "target_addr is required",
+		},
+		{
 			name: "valid grafana_live sink",
 			config: Config{
 				Log:     LogConfig{Level: "info", Format: "text"},

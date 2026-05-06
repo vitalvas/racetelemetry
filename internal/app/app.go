@@ -15,8 +15,10 @@ import (
 	"github.com/vitalvas/racetelemetry/internal/sink/pcars1udp"
 	"github.com/vitalvas/racetelemetry/internal/sink/pcars2shm"
 	"github.com/vitalvas/racetelemetry/internal/sink/pcars2udp"
+	sinkwire "github.com/vitalvas/racetelemetry/internal/sink/wire"
 	"github.com/vitalvas/racetelemetry/internal/source/forza"
 	"github.com/vitalvas/racetelemetry/internal/source/gt7"
+	sourcewire "github.com/vitalvas/racetelemetry/internal/source/wire"
 )
 
 // Run loads config, builds the pipeline, and runs it until ctx is done.
@@ -98,6 +100,8 @@ func buildSources(entries map[string]config.SourceEntry) (map[string]pipeline.So
 			sources[name] = forza.New(entry.ListenAddr)
 		case "gt7":
 			sources[name] = gt7.New(entry.ConsoleAddr, entry.ListenAddr)
+		case "wire":
+			sources[name] = sourcewire.New(entry.ListenAddr)
 		default:
 			return nil, fmt.Errorf("unknown source type %q for %q", entry.Type, name)
 		}
@@ -133,6 +137,8 @@ func buildSinks(entries map[string]config.SinkEntry) (map[string]pipeline.SinkRo
 			s = shm
 		case "json_stdout":
 			s = jsonstdout.New()
+		case "wire":
+			s = sinkwire.New(entry.TargetAddr)
 		case "grafana_live":
 			s = grafanalive.New(entry.Endpoint, entry.APIKey)
 		default:

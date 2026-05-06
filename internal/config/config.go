@@ -101,6 +101,10 @@ func (s *SourceEntry) validate() error {
 		if s.ListenAddr == "" {
 			return errors.New("listen_addr is required")
 		}
+	case "wire":
+		if s.ListenAddr == "" {
+			return errors.New("listen_addr is required")
+		}
 	default:
 		return fmt.Errorf("unknown source type %q", s.Type)
 	}
@@ -121,6 +125,10 @@ func (s *SinkEntry) validate(sources map[string]SourceEntry) error {
 		}
 	case "pcars2_shm":
 	case "json_stdout":
+	case "wire":
+		if s.TargetAddr == "" {
+			return errors.New("target_addr is required")
+		}
 	case "grafana_live":
 		if s.Endpoint == "" {
 			return errors.New("endpoint is required")

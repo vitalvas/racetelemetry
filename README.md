@@ -1,6 +1,6 @@
-# racetelemetry
+# Racing Telemetry
 
-A telemetry pipeline for racing games. Receives telemetry data from game sources, normalizes it, and routes it to output sinks -- like [vector.dev](https://vector.dev) but for racing telemetry.
+A telemetry pipeline for racing games. Receives telemetry data from game sources, normalizes it, and routes it to output sinks - like [vector.dev](https://vector.dev) but for racing telemetry.
 
 ## Features
 
@@ -17,6 +17,7 @@ A telemetry pipeline for racing games. Receives telemetry data from game sources
 |------|-------|----------|
 | `forza` | Forza Motorsport 7, Forza Horizon 4/5 (Xbox/PC/PS5), Forza Motorsport (2023) | UDP, auto-detects V1 (311B), V2 (324B), V3 (331B) |
 | `gt7` | Gran Turismo 7, Gran Turismo Sport, Gran Turismo 6 | UDP with Salsa20 encryption, heartbeat keep-alive, format C (368B) |
+| `wire` | Another racetelemetry instance | UDP, JSON-encoded TelemetryFrame |
 
 ## Supported Sinks
 
@@ -28,6 +29,7 @@ A telemetry pipeline for racing games. Receives telemetry data from game sources
 | `pcars2_shm` | Project CARS 2/3 shared memory (`$pcars2$`) | Windows |
 | `json_stdout` | JSON lines to stdout | Cross-platform |
 | `grafana_live` | Grafana Live push API (Influx line protocol) | Cross-platform |
+| `wire` | Forward to another racetelemetry instance | Cross-platform |
 
 ## Configuration
 
