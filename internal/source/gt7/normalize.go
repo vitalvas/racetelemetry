@@ -9,6 +9,7 @@ import (
 func normalize(pkt *Packet) model.TelemetryFrame {
 	isRaceOn := pkt.StatusFlags&0x01 != 0
 	gear := normalizeGear(pkt.CurrentGear)
+	suggestedGear := int8(pkt.SuggestedGear)
 	maxRPM := float32(pkt.RPMRevLimiter)
 	throttle := float32(pkt.Throttle) / 255.0
 	brake := float32(pkt.Brake) / 255.0
@@ -16,6 +17,7 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 	bestLap := float32(pkt.BestLapTime) / 1000.0
 	lastLap := float32(pkt.LastLapTime) / 1000.0
 	racePos := uint8(pkt.CurrentPosition)
+	topSpeed := pkt.EstimatedTopSpeed
 
 	frame := model.TelemetryFrame{
 		Timestamp: time.Now(),
@@ -24,12 +26,16 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 		EngineRPM:    &pkt.RPM,
 		EngineMaxRPM: &maxRPM,
 
-		Gear:     &gear,
-		Speed:    &pkt.CarSpeed,
-		Throttle: &throttle,
-		Brake:    &brake,
-		Clutch:   &pkt.Clutch,
-		Steer:    &pkt.SteeringAngle,
+		Gear:           &gear,
+		SuggestedGear:  &suggestedGear,
+		Speed:          &pkt.CarSpeed,
+		Throttle:       &throttle,
+		Brake:          &brake,
+		Clutch:         &pkt.Clutch,
+		ClutchEngaged:  &pkt.ClutchEngaged,
+		RPMAfterClutch: &pkt.RPMAfterClutch,
+		Steer:          &pkt.SteeringAngle,
+		SteerVelocity:  &pkt.SteeringVelocity,
 
 		VelocityX:        &pkt.VelocityX,
 		VelocityY:        &pkt.VelocityY,
@@ -38,9 +44,10 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 		AngularVelocityY: &pkt.AngularVelocityY,
 		AngularVelocityZ: &pkt.AngularVelocityZ,
 
-		Yaw:   &pkt.RotationYaw,
-		Pitch: &pkt.RotationPitch,
-		Roll:  &pkt.RotationRoll,
+		Yaw:     &pkt.RotationYaw,
+		Pitch:   &pkt.RotationPitch,
+		Roll:    &pkt.RotationRoll,
+		Heading: &pkt.Heading,
 
 		PositionX: &pkt.PositionX,
 		PositionY: &pkt.PositionY,
@@ -50,21 +57,33 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 
 		FuelCapacity: &pkt.FuelCapacity,
 
-		OilTemp:   &pkt.OilTemp,
-		WaterTemp: &pkt.WaterTemp,
+		OilTemp:     &pkt.OilTemp,
+		OilPressure: &pkt.OilPressure,
+		WaterTemp:   &pkt.WaterTemp,
+		RideHeight:  &pkt.RideHeight,
 
 		TireTemp:         &pkt.TireTemp,
 		SuspensionTravel: &pkt.Suspension,
 		WheelSpeed:       &pkt.TyreAngularSpeed,
+		WheelRadius:      &pkt.TyreRadius,
 
-		LapNumber:    &pkt.CurrentLap,
-		TotalLaps:    &pkt.TotalLaps,
-		RacePosition: &racePos,
-		BestLapTime:  &bestLap,
-		LastLapTime:  &lastLap,
+		RoadPlaneX:    &pkt.RoadPlaneX,
+		RoadPlaneY:    &pkt.RoadPlaneY,
+		RoadPlaneZ:    &pkt.RoadPlaneZ,
+		RoadPlaneDist: &pkt.RoadPlaneDist,
 
-		CarIndex:   &pkt.CarID,
-		GearRatios: &pkt.GearRatios,
+		LapNumber:      &pkt.CurrentLap,
+		TotalLaps:      &pkt.TotalLaps,
+		RacePosition:   &racePos,
+		TotalPositions: &pkt.TotalPositions,
+		BestLapTime:    &bestLap,
+		LastLapTime:    &lastLap,
+
+		CarIndex:          &pkt.CarID,
+		EstimatedTopSpeed: &topSpeed,
+
+		GearRatios:    &pkt.GearRatios,
+		TopSpeedRatio: &pkt.TopSpeedRatio,
 	}
 
 	if pkt.FuelCapacity > 0 {

@@ -22,23 +22,33 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 		fahrenheitToCelsius(pkt.TireTemp[3]),
 	}
 
+	wheelOnRumble := [4]bool{
+		pkt.WheelOnRumbleStrip[0] > 0,
+		pkt.WheelOnRumbleStrip[1] > 0,
+		pkt.WheelOnRumbleStrip[2] > 0,
+		pkt.WheelOnRumbleStrip[3] > 0,
+	}
+
 	lapNumber := int16(pkt.LapNumber)
 
 	return model.TelemetryFrame{
-		Timestamp: time.Now(),
-		IsRaceOn:  &isRaceOn,
+		Timestamp:       time.Now(),
+		IsRaceOn:        &isRaceOn,
+		CurrentRaceTime: &pkt.CurrentRaceTime,
 
 		EngineRPM:     &pkt.CurrentRPM,
 		EngineMaxRPM:  &pkt.EngineMaxRPM,
 		EngineIdleRPM: &pkt.EngineIdleRPM,
+		NumCylinders:  &pkt.NumCylinders,
 
-		Gear:      &gear,
-		Speed:     &pkt.Speed,
-		Throttle:  &throttle,
-		Brake:     &brake,
-		Clutch:    &clutch,
-		HandBrake: &handBrake,
-		Steer:     &steer,
+		Gear:           &gear,
+		Speed:          &pkt.Speed,
+		Throttle:       &throttle,
+		Brake:          &brake,
+		Clutch:         &clutch,
+		HandBrake:      &handBrake,
+		Steer:          &steer,
+		DrivetrainType: &pkt.DrivetrainType,
 
 		AccelerationX:    &pkt.AccelerationX,
 		AccelerationY:    &pkt.AccelerationY,
@@ -64,11 +74,16 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 
 		Fuel: &pkt.Fuel,
 
-		TireTemp:         &tireTemp,
-		SuspensionTravel: &pkt.SuspensionTravelMeters,
-		WheelSpeed:       &pkt.WheelRotationSpeed,
-		SlipRatio:        &pkt.TireSlipRatio,
-		SlipAngle:        &pkt.TireSlipAngle,
+		TireTemp:                   &tireTemp,
+		SuspensionTravel:           &pkt.SuspensionTravelMeters,
+		NormalizedSuspensionTravel: &pkt.NormalizedSuspensionTravel,
+		WheelSpeed:                 &pkt.WheelRotationSpeed,
+		WheelOnRumbleStrip:         &wheelOnRumble,
+		WheelInPuddleDepth:         &pkt.WheelInPuddleDepth,
+		SurfaceRumble:              &pkt.SurfaceRumble,
+		SlipRatio:                  &pkt.TireSlipRatio,
+		SlipAngle:                  &pkt.TireSlipAngle,
+		TireCombinedSlip:           &pkt.TireCombinedSlip,
 
 		LapNumber:      &lapNumber,
 		RacePosition:   &pkt.RacePosition,
@@ -77,8 +92,12 @@ func normalize(pkt *Packet) model.TelemetryFrame {
 		CurrentLapTime: &pkt.CurrentLap,
 		LapDistance:    &pkt.DistanceTraveled,
 
-		CarClass: &pkt.CarClass,
-		CarIndex: &pkt.CarOrdinal,
+		CarClass:            &pkt.CarClass,
+		CarIndex:            &pkt.CarOrdinal,
+		CarPerformanceIndex: &pkt.CarPerformanceIndex,
+
+		NormalizedDrivingLine: &pkt.NormalizedDrivingLine,
+		NormalizedAIBrakeDiff: &pkt.NormalizedAIBrakeDiff,
 	}
 }
 

@@ -217,22 +217,42 @@ func convertTelemetry(seq uint32, frame *model.TelemetryFrame) []byte {
 	putFloat32(buf, off, val(frame.WaterTemp))
 	off += 4
 
-	// Oil/Water/Fuel pressure
-	off += 12
+	// Oil pressure (float32, kPa)
+	putFloat32(buf, off, val(frame.OilPressure))
+	off += 4
 
-	// Car flags
+	// Water pressure (float32, kPa)
+	off += 4
+
+	// Fuel pressure (float32, kPa)
+	off += 4
+
+	// Car flags (uint8)
 	var carFlags uint8
 	if val(frame.IsRaceOn) {
-		carFlags |= 0x02
+		carFlags |= 0x02 // ENGINE_ACTIVE
+	}
+
+	if val(frame.HandBrake) > 0 {
+		carFlags |= 0x20 // HANDBRAKE
 	}
 
 	buf[off] = carFlags
 	off++
 
+	// Engine torque (float32, Nm)
 	putFloat32(buf, off, val(frame.Torque))
 	off += 4
 
+	// Engine speed (float32)
 	putFloat32(buf, off, val(frame.EngineRPM))
+	off += 4
+
+	// Wings (float32 x2)
+	off += 8
+
+	// HandBrake (float32)
+	putFloat32(buf, off, val(frame.HandBrake))
 
 	return buf
 }
