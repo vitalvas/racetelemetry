@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
@@ -20,9 +21,9 @@ type Sink struct {
 }
 
 // New creates a new pCars2 UDP sink.
-func New(targetAddr string) *Sink {
+func New(entry config.SinkEntry) *Sink {
 	return &Sink{
-		targetAddr: targetAddr,
+		targetAddr: entry.TargetAddr,
 	}
 }
 

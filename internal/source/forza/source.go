@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
@@ -17,9 +18,9 @@ type Source struct {
 }
 
 // New creates a new Forza telemetry source.
-func New(listenAddr string) *Source {
+func New(entry config.SourceEntry) *Source {
 	return &Source{
-		listenAddr: listenAddr,
+		listenAddr: entry.ListenAddr,
 	}
 }
 

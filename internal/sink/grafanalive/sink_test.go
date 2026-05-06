@@ -12,11 +12,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
 func TestSink_Name(t *testing.T) {
-	s := New("http://localhost:3000/api/live/push/test", "test-key")
+	s := New(config.SinkEntry{Endpoint: "http://localhost:3000/api/live/push/test", APIKey: "test-key"})
 	assert.Equal(t, "grafana_live", s.Name())
 }
 
@@ -35,7 +36,7 @@ func TestSink_Run(t *testing.T) {
 		}))
 		defer server.Close()
 
-		s := New(fmt.Sprintf("%s/api/live/push/race", server.URL), "my-api-key")
+		s := New(config.SinkEntry{Endpoint: fmt.Sprintf("%s/api/live/push/race", server.URL), APIKey: "my-api-key"})
 
 		in := make(chan model.TelemetryFrame, 1)
 		in <- model.TelemetryFrame{
@@ -74,7 +75,7 @@ func TestSink_Run(t *testing.T) {
 		}))
 		defer server.Close()
 
-		s := New(fmt.Sprintf("%s/api/live/push/race", server.URL), "key")
+		s := New(config.SinkEntry{Endpoint: fmt.Sprintf("%s/api/live/push/race", server.URL), APIKey: "key"})
 
 		in := make(chan model.TelemetryFrame, 1)
 		in <- model.TelemetryFrame{IsRaceOn: model.Ptr(true), EngineRPM: model.Ptr(float32(5000))}
@@ -86,7 +87,7 @@ func TestSink_Run(t *testing.T) {
 	})
 
 	t.Run("stops on context cancel", func(t *testing.T) {
-		s := New("http://localhost:1/noop", "key")
+		s := New(config.SinkEntry{Endpoint: "http://localhost:1/noop", APIKey: "key"})
 
 		in := make(chan model.TelemetryFrame)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -108,7 +109,7 @@ func TestSink_Run(t *testing.T) {
 	})
 
 	t.Run("stops on channel close", func(t *testing.T) {
-		s := New("http://localhost:1/noop", "key")
+		s := New(config.SinkEntry{Endpoint: "http://localhost:1/noop", APIKey: "key"})
 
 		in := make(chan model.TelemetryFrame)
 		close(in)

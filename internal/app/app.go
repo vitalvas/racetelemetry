@@ -9,6 +9,7 @@ import (
 	"github.com/vitalvas/gokit/xconfig"
 	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/pipeline"
+	sinkcsv "github.com/vitalvas/racetelemetry/internal/sink/csv"
 	"github.com/vitalvas/racetelemetry/internal/sink/grafanalive"
 	"github.com/vitalvas/racetelemetry/internal/sink/jsonstdout"
 	"github.com/vitalvas/racetelemetry/internal/sink/pcars1shm"
@@ -97,11 +98,11 @@ func buildSources(entries map[string]config.SourceEntry) (map[string]pipeline.So
 	for name, entry := range entries {
 		switch entry.Type {
 		case "forza":
-			sources[name] = forza.New(entry.ListenAddr)
+			sources[name] = forza.New(entry)
 		case "gt7":
-			sources[name] = gt7.New(entry.ConsoleAddr, entry.ListenAddr)
+			sources[name] = gt7.New(entry)
 		case "wire":
-			sources[name] = sourcewire.New(entry.ListenAddr)
+			sources[name] = sourcewire.New(entry)
 		default:
 			return nil, fmt.Errorf("unknown source type %q for %q", entry.Type, name)
 		}
@@ -118,7 +119,7 @@ func buildSinks(entries map[string]config.SinkEntry) (map[string]pipeline.SinkRo
 
 		switch entry.Type {
 		case "pcars1_udp":
-			s = pcars1udp.New(entry.TargetAddr)
+			s = pcars1udp.New(entry)
 		case "pcars1_shm":
 			shm, err := pcars1shm.New()
 			if err != nil {
@@ -127,7 +128,7 @@ func buildSinks(entries map[string]config.SinkEntry) (map[string]pipeline.SinkRo
 
 			s = shm
 		case "pcars2_udp":
-			s = pcars2udp.New(entry.TargetAddr)
+			s = pcars2udp.New(entry)
 		case "pcars2_shm":
 			shm, err := pcars2shm.New()
 			if err != nil {
@@ -137,10 +138,12 @@ func buildSinks(entries map[string]config.SinkEntry) (map[string]pipeline.SinkRo
 			s = shm
 		case "json_stdout":
 			s = jsonstdout.New()
+		case "csv":
+			s = sinkcsv.New(entry)
 		case "wire":
-			s = sinkwire.New(entry.TargetAddr)
+			s = sinkwire.New(entry)
 		case "grafana_live":
-			s = grafanalive.New(entry.Endpoint, entry.APIKey)
+			s = grafanalive.New(entry)
 		default:
 			return nil, fmt.Errorf("unknown sink type %q for %q", entry.Type, name)
 		}

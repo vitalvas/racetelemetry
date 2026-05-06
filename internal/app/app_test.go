@@ -237,6 +237,17 @@ func TestBuildSinks(t *testing.T) {
 		assert.Equal(t, "wire", sinks["w"].Sink.Name())
 	})
 
+	t.Run("csv sink", func(t *testing.T) {
+		entries := map[string]config.SinkEntry{
+			"log": {Type: "csv", Inputs: []string{"s1"}, FilePath: "telemetry.csv"},
+		}
+
+		sinks, err := buildSinks(entries)
+		require.NoError(t, err)
+		require.Len(t, sinks, 1)
+		assert.Equal(t, "csv", sinks["log"].Sink.Name())
+	})
+
 	t.Run("json_stdout sink", func(t *testing.T) {
 		entries := map[string]config.SinkEntry{
 			"debug": {Type: "json_stdout", Inputs: []string{"s1"}},

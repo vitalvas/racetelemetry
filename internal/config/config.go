@@ -37,6 +37,10 @@ type SinkEntry struct {
 	// pcars1_udp / pcars2_udp specific
 	TargetAddr string `yaml:"target_addr,omitempty" json:"target_addr,omitempty"`
 
+	// csv specific
+	FilePath  string `yaml:"file_path,omitempty" json:"file_path,omitempty"`
+	CSVFormat string `yaml:"csv_format,omitempty" json:"csv_format,omitempty"`
+
 	// grafana_live specific
 	Endpoint string `yaml:"endpoint,omitempty" json:"endpoint,omitempty"`
 	APIKey   string `yaml:"api_key,omitempty" json:"api_key,omitempty"`
@@ -125,6 +129,14 @@ func (s *SinkEntry) validate(sources map[string]SourceEntry) error {
 		}
 	case "pcars2_shm":
 	case "json_stdout":
+	case "csv":
+		if s.FilePath == "" {
+			return errors.New("file_path is required")
+		}
+
+		if s.CSVFormat != "" && s.CSVFormat != "default" && s.CSVFormat != "forza" {
+			return fmt.Errorf("csv_format must be 'default' or 'forza', got %q", s.CSVFormat)
+		}
 	case "wire":
 		if s.TargetAddr == "" {
 			return errors.New("target_addr is required")

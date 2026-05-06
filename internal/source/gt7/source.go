@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
@@ -26,10 +27,10 @@ type Source struct {
 }
 
 // New creates a new GT telemetry source.
-func New(consoleAddr, listenAddr string) *Source {
+func New(entry config.SourceEntry) *Source {
 	return &Source{
-		consoleAddr: consoleAddr,
-		listenAddr:  listenAddr,
+		consoleAddr: entry.ConsoleAddr,
+		listenAddr:  entry.ListenAddr,
 	}
 }
 

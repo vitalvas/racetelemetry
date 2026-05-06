@@ -8,11 +8,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
 func TestSink_Name(t *testing.T) {
-	s := New("127.0.0.1:5606")
+	s := New(config.SinkEntry{TargetAddr: "127.0.0.1:5606"})
 	assert.Equal(t, "pcars1_udp", s.Name())
 }
 
@@ -26,7 +27,7 @@ func TestSink_Run(t *testing.T) {
 		require.NoError(t, err)
 		defer listener.Close()
 
-		s := New(listener.LocalAddr().String())
+		s := New(config.SinkEntry{TargetAddr: listener.LocalAddr().String()})
 
 		in := make(chan model.TelemetryFrame, 1)
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -72,7 +73,7 @@ func TestSink_Run(t *testing.T) {
 		require.NoError(t, err)
 		defer listener.Close()
 
-		s := New(listener.LocalAddr().String())
+		s := New(config.SinkEntry{TargetAddr: listener.LocalAddr().String()})
 
 		in := make(chan model.TelemetryFrame)
 		errCh := make(chan error, 1)
@@ -100,7 +101,7 @@ func TestSink_Run(t *testing.T) {
 		require.NoError(t, err)
 		defer listener.Close()
 
-		s := New(listener.LocalAddr().String())
+		s := New(config.SinkEntry{TargetAddr: listener.LocalAddr().String()})
 
 		in := make(chan model.TelemetryFrame)
 		ctx, cancel := context.WithCancel(context.Background())

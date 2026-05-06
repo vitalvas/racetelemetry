@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
@@ -20,10 +21,10 @@ type Sink struct {
 }
 
 // New creates a new Grafana Live sink.
-func New(endpoint, apiKey string) *Sink {
+func New(entry config.SinkEntry) *Sink {
 	return &Sink{
-		endpoint: endpoint,
-		apiKey:   apiKey,
+		endpoint: entry.Endpoint,
+		apiKey:   entry.APIKey,
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},

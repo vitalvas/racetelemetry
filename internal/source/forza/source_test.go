@@ -10,11 +10,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
 func TestSource_Name(t *testing.T) {
-	s := New(":0")
+	s := New(config.SourceEntry{ListenAddr: ":0"})
 	assert.Equal(t, "forza", s.Name())
 }
 
@@ -23,7 +24,7 @@ func TestSource_Run(t *testing.T) {
 
 	t.Run("receives and normalizes packet", func(t *testing.T) {
 		// Use port 0 to get a random available port
-		s := New("127.0.0.1:0")
+		s := New(config.SourceEntry{ListenAddr: "127.0.0.1:0"})
 
 		out := make(chan model.TelemetryFrame, 1)
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -80,7 +81,7 @@ func TestSource_Run(t *testing.T) {
 	})
 
 	t.Run("ignores wrong size packets", func(t *testing.T) {
-		s := New("127.0.0.1:0")
+		s := New(config.SourceEntry{ListenAddr: "127.0.0.1:0"})
 
 		addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:0")
 		require.NoError(t, err)

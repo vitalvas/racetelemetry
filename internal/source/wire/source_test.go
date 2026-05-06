@@ -9,11 +9,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 )
 
 func TestSource_Name(t *testing.T) {
-	s := New(":15000")
+	s := New(config.SourceEntry{ListenAddr: ":15000"})
 	assert.Equal(t, "wire", s.Name())
 }
 
@@ -30,7 +31,7 @@ func TestSource_Run(t *testing.T) {
 		listenAddr := conn.LocalAddr().String()
 		conn.Close()
 
-		s := New(listenAddr)
+		s := New(config.SourceEntry{ListenAddr: listenAddr})
 
 		out := make(chan model.TelemetryFrame, 1)
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -88,7 +89,7 @@ func TestSource_Run(t *testing.T) {
 		listenAddr := conn.LocalAddr().String()
 		conn.Close()
 
-		s := New(listenAddr)
+		s := New(config.SourceEntry{ListenAddr: listenAddr})
 
 		out := make(chan model.TelemetryFrame, 1)
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -131,7 +132,7 @@ func TestSource_Run(t *testing.T) {
 	})
 
 	t.Run("invalid listen address", func(t *testing.T) {
-		s := New("invalid-addr")
+		s := New(config.SourceEntry{ListenAddr: "invalid-addr"})
 
 		out := make(chan model.TelemetryFrame, 1)
 

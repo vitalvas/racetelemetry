@@ -10,13 +10,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vitalvas/racetelemetry/internal/config"
 	"github.com/vitalvas/racetelemetry/internal/model"
 
 	"golang.org/x/crypto/salsa20"
 )
 
 func TestSource_Name(t *testing.T) {
-	s := New("192.168.1.1", ":33740")
+	s := New(config.SourceEntry{ConsoleAddr: "192.168.1.1", ListenAddr: ":33740"})
 	assert.Equal(t, "gt7", s.Name())
 }
 
@@ -37,7 +38,7 @@ func TestSource_Run(t *testing.T) {
 		heartbeatAddr := heartbeatConn.LocalAddr().(*net.UDPAddr)
 		heartbeatConn.Close()
 
-		s := New(heartbeatAddr.IP.String(), listenAddr)
+		s := New(config.SourceEntry{ConsoleAddr: heartbeatAddr.IP.String(), ListenAddr: listenAddr})
 		s.consoleAddr = heartbeatAddr.IP.String()
 
 		// Override heartbeat port for test
@@ -78,7 +79,7 @@ func TestSource_Run(t *testing.T) {
 	})
 
 	t.Run("context cancellation", func(t *testing.T) {
-		s := New("127.0.0.1", "127.0.0.1:0")
+		s := New(config.SourceEntry{ConsoleAddr: "127.0.0.1", ListenAddr: "127.0.0.1:0"})
 
 		out := make(chan model.TelemetryFrame, 1)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -101,7 +102,7 @@ func TestSource_Run(t *testing.T) {
 	})
 
 	t.Run("invalid listen address", func(t *testing.T) {
-		s := New("127.0.0.1", "invalid-addr")
+		s := New(config.SourceEntry{ConsoleAddr: "127.0.0.1", ListenAddr: "invalid-addr"})
 
 		out := make(chan model.TelemetryFrame, 1)
 		ctx := context.Background()

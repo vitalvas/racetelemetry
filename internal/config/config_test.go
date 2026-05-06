@@ -199,6 +199,40 @@ func TestConfig_Validate(t *testing.T) {
 			},
 		},
 		{
+			name: "valid csv sink",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "csv", Inputs: []string{"s1"}, FilePath: "telemetry.csv"}},
+			},
+		},
+		{
+			name: "valid csv sink with forza format",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "csv", Inputs: []string{"s1"}, FilePath: "telemetry.csv", CSVFormat: "forza"}},
+			},
+		},
+		{
+			name: "csv sink invalid format",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "csv", Inputs: []string{"s1"}, FilePath: "telemetry.csv", CSVFormat: "unknown"}},
+			},
+			wantErr: "csv_format must be",
+		},
+		{
+			name: "csv sink missing file_path",
+			config: Config{
+				Log:     LogConfig{Level: "info", Format: "text"},
+				Sources: map[string]SourceEntry{"s1": {Type: "forza", ListenAddr: ":5300"}},
+				Sinks:   map[string]SinkEntry{"k1": {Type: "csv", Inputs: []string{"s1"}}},
+			},
+			wantErr: "file_path is required",
+		},
+		{
 			name: "valid wire source",
 			config: Config{
 				Log:     LogConfig{Level: "info", Format: "text"},

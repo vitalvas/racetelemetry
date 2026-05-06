@@ -27,6 +27,7 @@ A telemetry pipeline for racing games. Receives telemetry data from game sources
 | `pcars1_shm` | Project CARS 1 shared memory (`$pcars$`) | Windows |
 | `pcars2_udp` | Project CARS 2/3 UDP telemetry | Cross-platform |
 | `pcars2_shm` | Project CARS 2/3 shared memory (`$pcars2$`) | Windows |
+| `csv` | CSV file output | Cross-platform |
 | `json_stdout` | JSON lines to stdout | Cross-platform |
 | `grafana_live` | Grafana Live push API (Influx line protocol) | Cross-platform |
 | `wire` | Forward to another racetelemetry instance | Cross-platform |
@@ -61,6 +62,8 @@ All sinks require `type` and `inputs` fields. `inputs` is a list of source names
 | `pcars1_shm` | | | No additional fields (Windows only) |
 | `pcars2_udp` | `target_addr` | yes | UDP address to send pCars 2 packets to |
 | `pcars2_shm` | | | No additional fields (Windows only) |
+| `csv` | `file_path` | yes | Path to output CSV file |
+| `csv` | `csv_format` | no | Column format: `default`, `forza` |
 | `json_stdout` | | | No additional fields |
 | `wire` | `target_addr` | yes | UDP address to forward frames to |
 | `grafana_live` | `endpoint` | yes | Grafana Live push API URL |
