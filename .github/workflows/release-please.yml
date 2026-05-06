@@ -22,3 +22,34 @@ jobs:
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
+  goreleaser:
+    name: Build and release packages
+    runs-on: ubuntu-latest
+    needs:
+      - release-please
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: "0"
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Test GoReleaser
+        if: ${{ needs.release-please.outputs.release_created != 'true' }}
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          args: release --clean --snapshot
+          distribution: goreleaser
+          version: ~> v2
+      - name: Run GoReleaser
+        if: ${{ needs.release-please.outputs.release_created }}
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        with:
+          args: release --clean
+          distribution: goreleaser
+          version: ~> v2
