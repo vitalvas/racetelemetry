@@ -31,13 +31,44 @@ A telemetry pipeline for racing games. Receives telemetry data from game sources
 | `grafana_live` | Grafana Live push API (Influx line protocol) | Cross-platform |
 | `wire` | Forward to another racetelemetry instance | Cross-platform |
 
-## Configuration
+## Configuration Reference
+
+### Log
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `level` | no | `info` | Log level: `debug`, `info`, `warn`, `error` |
+| `format` | no | `text` | Log format: `text`, `json` |
+
+### Source Options
+
+All sources require `type` field.
+
+| Type | Field | Required | Description |
+|------|-------|----------|-------------|
+| `forza` | `listen_addr` | yes | UDP address to listen on (e.g. `:5300`) |
+| `gt7` | `listen_addr` | yes | UDP address to listen on (e.g. `:33740`) |
+| `gt7` | `console_addr` | yes | IP address of the PlayStation console |
+| `wire` | `listen_addr` | yes | UDP address to listen on (e.g. `:15000`) |
+
+### Sink Options
+
+All sinks require `type` and `inputs` fields. `inputs` is a list of source names to subscribe to.
+
+| Type | Field | Required | Description |
+|------|-------|----------|-------------|
+| `pcars1_udp` | `target_addr` | yes | UDP address to send pCars 1 packets to |
+| `pcars1_shm` | | | No additional fields (Windows only) |
+| `pcars2_udp` | `target_addr` | yes | UDP address to send pCars 2 packets to |
+| `pcars2_shm` | | | No additional fields (Windows only) |
+| `json_stdout` | | | No additional fields |
+| `wire` | `target_addr` | yes | UDP address to forward frames to |
+| `grafana_live` | `endpoint` | yes | Grafana Live push API URL |
+| `grafana_live` | `api_key` | yes | Grafana service account token |
+
+## Configuration Example
 
 ```yaml
-log:
-  level: info    # debug, info, warn, error
-  format: text   # text, json
-
 sources:
   forza_xbox:
     type: forza
