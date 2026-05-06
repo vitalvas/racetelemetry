@@ -12,12 +12,12 @@ import (
 func TestConvertTelemetry(t *testing.T) {
 	t.Run("packet size and header", func(t *testing.T) {
 		frame := model.TelemetryFrame{
-			IsRaceOn:  true,
-			EngineRPM: 5000.0,
-			Speed:     30.0,
-			Throttle:  0.75,
-			Brake:     0.5,
-			Gear:      3,
+			IsRaceOn:  model.Ptr(true),
+			EngineRPM: model.Ptr(float32(5000.0)),
+			Speed:     model.Ptr(float32(30.0)),
+			Throttle:  model.Ptr(float32(0.75)),
+			Brake:     model.Ptr(float32(0.5)),
+			Gear:      model.Ptr(int8(3)),
 		}
 
 		data := convertTelemetry(42, &frame)
@@ -33,8 +33,8 @@ func TestConvertTelemetry(t *testing.T) {
 
 	t.Run("throttle brake encoding", func(t *testing.T) {
 		frame := model.TelemetryFrame{
-			Throttle: 1.0,
-			Brake:    0.0,
+			Throttle: model.Ptr(float32(1.0)),
+			Brake:    model.Ptr(float32(0.0)),
 		}
 
 		data := convertTelemetry(1, &frame)
@@ -46,7 +46,7 @@ func TestConvertTelemetry(t *testing.T) {
 
 func TestConvertGameState(t *testing.T) {
 	t.Run("race on", func(t *testing.T) {
-		frame := model.TelemetryFrame{IsRaceOn: true}
+		frame := model.TelemetryFrame{IsRaceOn: model.Ptr(true)}
 		data := convertGameState(1, &frame)
 
 		assert.Equal(t, gameStatePacketSize, len(data))
@@ -58,7 +58,7 @@ func TestConvertGameState(t *testing.T) {
 	})
 
 	t.Run("race off", func(t *testing.T) {
-		frame := model.TelemetryFrame{IsRaceOn: false}
+		frame := model.TelemetryFrame{IsRaceOn: model.Ptr(false)}
 		data := convertGameState(1, &frame)
 
 		gameState := binary.LittleEndian.Uint16(data[headerSize : headerSize+2])
@@ -69,16 +69,16 @@ func TestConvertGameState(t *testing.T) {
 func TestConvertTimings(t *testing.T) {
 	t.Run("timing data", func(t *testing.T) {
 		frame := model.TelemetryFrame{
-			IsRaceOn:       true,
-			PositionX:      100.0,
-			PositionY:      50.0,
-			PositionZ:      200.0,
-			LapDistance:    1500.0,
-			RacePosition:   3,
-			LapNumber:      5,
-			BestLapTime:    65.5,
-			LastLapTime:    66.2,
-			CurrentLapTime: 30.1,
+			IsRaceOn:       model.Ptr(true),
+			PositionX:      model.Ptr(float32(100.0)),
+			PositionY:      model.Ptr(float32(50.0)),
+			PositionZ:      model.Ptr(float32(200.0)),
+			LapDistance:    model.Ptr(float32(1500.0)),
+			RacePosition:   model.Ptr(uint8(3)),
+			LapNumber:      model.Ptr(int16(5)),
+			BestLapTime:    model.Ptr(float32(65.5)),
+			LastLapTime:    model.Ptr(float32(66.2)),
+			CurrentLapTime: model.Ptr(float32(30.1)),
 		}
 
 		data := convertTimings(1, &frame)
@@ -97,15 +97,15 @@ func TestConvertTimings(t *testing.T) {
 
 func BenchmarkConvertTelemetry(b *testing.B) {
 	frame := &model.TelemetryFrame{
-		IsRaceOn:     true,
-		EngineRPM:    5000.0,
-		EngineMaxRPM: 8000.0,
-		Speed:        30.0,
-		Throttle:     0.75,
-		Brake:        0.5,
-		Gear:         3,
-		TireTemp:     [4]float32{85.0, 86.0, 82.0, 83.0},
-		Fuel:         0.75,
+		IsRaceOn:     model.Ptr(true),
+		EngineRPM:    model.Ptr(float32(5000.0)),
+		EngineMaxRPM: model.Ptr(float32(8000.0)),
+		Speed:        model.Ptr(float32(30.0)),
+		Throttle:     model.Ptr(float32(0.75)),
+		Brake:        model.Ptr(float32(0.5)),
+		Gear:         model.Ptr(int8(3)),
+		TireTemp:     &[4]float32{85.0, 86.0, 82.0, 83.0},
+		Fuel:         model.Ptr(float32(0.75)),
 	}
 
 	b.ResetTimer()

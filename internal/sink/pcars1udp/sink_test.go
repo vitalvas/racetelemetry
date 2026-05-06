@@ -41,12 +41,12 @@ func TestSink_Run(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 
 		in <- model.TelemetryFrame{
-			IsRaceOn:  true,
-			EngineRPM: 5000.0,
-			Speed:     30.0,
-			Throttle:  0.75,
-			Brake:     0.5,
-			Gear:      3,
+			IsRaceOn:  model.Ptr(true),
+			EngineRPM: model.Ptr(float32(5000.0)),
+			Speed:     model.Ptr(float32(30.0)),
+			Throttle:  model.Ptr(float32(0.75)),
+			Brake:     model.Ptr(float32(0.5)),
+			Gear:      model.Ptr(int8(3)),
 		}
 
 		buf := make([]byte, 2048)

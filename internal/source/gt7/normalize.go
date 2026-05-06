@@ -7,59 +7,74 @@ import (
 )
 
 func normalize(pkt *Packet) model.TelemetryFrame {
+	isRaceOn := pkt.StatusFlags&0x01 != 0
+	gear := normalizeGear(pkt.CurrentGear)
+	maxRPM := float32(pkt.RPMRevLimiter)
+	throttle := float32(pkt.Throttle) / 255.0
+	brake := float32(pkt.Brake) / 255.0
+	boost := pkt.Boost - 1.0
+	bestLap := float32(pkt.BestLapTime) / 1000.0
+	lastLap := float32(pkt.LastLapTime) / 1000.0
+	racePos := uint8(pkt.CurrentPosition)
+
 	frame := model.TelemetryFrame{
 		Timestamp: time.Now(),
-		IsRaceOn:  pkt.StatusFlags&0x01 != 0,
+		IsRaceOn:  &isRaceOn,
 
-		EngineRPM:    pkt.RPM,
-		EngineMaxRPM: float32(pkt.RPMRevLimiter),
+		EngineRPM:    &pkt.RPM,
+		EngineMaxRPM: &maxRPM,
 
-		Gear:     normalizeGear(pkt.CurrentGear),
-		Speed:    pkt.CarSpeed,
-		Throttle: float32(pkt.Throttle) / 255.0,
-		Brake:    float32(pkt.Brake) / 255.0,
-		Clutch:   pkt.Clutch,
-		Steer:    pkt.SteeringAngle,
+		Gear:     &gear,
+		Speed:    &pkt.CarSpeed,
+		Throttle: &throttle,
+		Brake:    &brake,
+		Clutch:   &pkt.Clutch,
+		Steer:    &pkt.SteeringAngle,
 
-		VelocityX:        pkt.VelocityX,
-		VelocityY:        pkt.VelocityY,
-		VelocityZ:        pkt.VelocityZ,
-		AngularVelocityX: pkt.AngularVelocityX,
-		AngularVelocityY: pkt.AngularVelocityY,
-		AngularVelocityZ: pkt.AngularVelocityZ,
+		VelocityX:        &pkt.VelocityX,
+		VelocityY:        &pkt.VelocityY,
+		VelocityZ:        &pkt.VelocityZ,
+		AngularVelocityX: &pkt.AngularVelocityX,
+		AngularVelocityY: &pkt.AngularVelocityY,
+		AngularVelocityZ: &pkt.AngularVelocityZ,
 
-		Yaw:   pkt.RotationYaw,
-		Pitch: pkt.RotationPitch,
-		Roll:  pkt.RotationRoll,
+		Yaw:   &pkt.RotationYaw,
+		Pitch: &pkt.RotationPitch,
+		Roll:  &pkt.RotationRoll,
 
-		PositionX: pkt.PositionX,
-		PositionY: pkt.PositionY,
-		PositionZ: pkt.PositionZ,
+		PositionX: &pkt.PositionX,
+		PositionY: &pkt.PositionY,
+		PositionZ: &pkt.PositionZ,
 
-		Boost: pkt.Boost - 1.0,
+		Boost: &boost,
 
-		FuelCapacity: pkt.FuelCapacity,
+		FuelCapacity: &pkt.FuelCapacity,
 
-		OilTemp:   pkt.OilTemp,
-		WaterTemp: pkt.WaterTemp,
+		OilTemp:   &pkt.OilTemp,
+		WaterTemp: &pkt.WaterTemp,
 
-		TireTemp:         pkt.TireTemp,
-		SuspensionTravel: pkt.Suspension,
-		WheelSpeed:       pkt.TyreAngularSpeed,
+		TireTemp:         &pkt.TireTemp,
+		SuspensionTravel: &pkt.Suspension,
+		WheelSpeed:       &pkt.TyreAngularSpeed,
 
-		LapNumber:      pkt.CurrentLap,
-		TotalLaps:      pkt.TotalLaps,
-		RacePosition:   uint8(pkt.CurrentPosition),
-		BestLapTime:    float32(pkt.BestLapTime) / 1000.0,
-		LastLapTime:    float32(pkt.LastLapTime) / 1000.0,
-		CurrentLapTime: float32(pkt.CurrentLapTimeMS) / 1000.0,
+		LapNumber:    &pkt.CurrentLap,
+		TotalLaps:    &pkt.TotalLaps,
+		RacePosition: &racePos,
+		BestLapTime:  &bestLap,
+		LastLapTime:  &lastLap,
 
-		CarIndex:   pkt.CarID,
-		GearRatios: pkt.GearRatios,
+		CarIndex:   &pkt.CarID,
+		GearRatios: &pkt.GearRatios,
 	}
 
 	if pkt.FuelCapacity > 0 {
-		frame.Fuel = pkt.CurrentFuel / pkt.FuelCapacity
+		fuel := pkt.CurrentFuel / pkt.FuelCapacity
+		frame.Fuel = &fuel
+	}
+
+	if pkt.CurrentLapTimeMS != 0 {
+		lapTime := float32(pkt.CurrentLapTimeMS) / 1000.0
+		frame.CurrentLapTime = &lapTime
 	}
 
 	return frame

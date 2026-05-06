@@ -7,68 +7,79 @@ import (
 )
 
 func normalize(pkt *Packet) model.TelemetryFrame {
-	frame := model.TelemetryFrame{
+	isRaceOn := pkt.IsRaceOn > 0
+	gear := normalizeGear(pkt.Gear)
+	throttle := float32(pkt.Accel) / 255.0
+	brake := float32(pkt.Brake) / 255.0
+	clutch := float32(pkt.Clutch) / 255.0
+	handBrake := float32(pkt.HandBrake) / 255.0
+	steer := float32(pkt.Steer) / 127.0
+
+	tireTemp := [4]float32{
+		fahrenheitToCelsius(pkt.TireTemp[0]),
+		fahrenheitToCelsius(pkt.TireTemp[1]),
+		fahrenheitToCelsius(pkt.TireTemp[2]),
+		fahrenheitToCelsius(pkt.TireTemp[3]),
+	}
+
+	lapNumber := int16(pkt.LapNumber)
+
+	return model.TelemetryFrame{
 		Timestamp: time.Now(),
-		IsRaceOn:  pkt.IsRaceOn > 0,
+		IsRaceOn:  &isRaceOn,
 
-		EngineRPM:     pkt.CurrentRPM,
-		EngineMaxRPM:  pkt.EngineMaxRPM,
-		EngineIdleRPM: pkt.EngineIdleRPM,
+		EngineRPM:     &pkt.CurrentRPM,
+		EngineMaxRPM:  &pkt.EngineMaxRPM,
+		EngineIdleRPM: &pkt.EngineIdleRPM,
 
-		Gear:      normalizeGear(pkt.Gear),
-		Speed:     pkt.Speed,
-		Throttle:  float32(pkt.Accel) / 255.0,
-		Brake:     float32(pkt.Brake) / 255.0,
-		Clutch:    float32(pkt.Clutch) / 255.0,
-		HandBrake: float32(pkt.HandBrake) / 255.0,
-		Steer:     float32(pkt.Steer) / 127.0,
+		Gear:      &gear,
+		Speed:     &pkt.Speed,
+		Throttle:  &throttle,
+		Brake:     &brake,
+		Clutch:    &clutch,
+		HandBrake: &handBrake,
+		Steer:     &steer,
 
-		AccelerationX:    pkt.AccelerationX,
-		AccelerationY:    pkt.AccelerationY,
-		AccelerationZ:    pkt.AccelerationZ,
-		VelocityX:        pkt.VelocityX,
-		VelocityY:        pkt.VelocityY,
-		VelocityZ:        pkt.VelocityZ,
-		AngularVelocityX: pkt.AngularVelocityX,
-		AngularVelocityY: pkt.AngularVelocityY,
-		AngularVelocityZ: pkt.AngularVelocityZ,
+		AccelerationX:    &pkt.AccelerationX,
+		AccelerationY:    &pkt.AccelerationY,
+		AccelerationZ:    &pkt.AccelerationZ,
+		VelocityX:        &pkt.VelocityX,
+		VelocityY:        &pkt.VelocityY,
+		VelocityZ:        &pkt.VelocityZ,
+		AngularVelocityX: &pkt.AngularVelocityX,
+		AngularVelocityY: &pkt.AngularVelocityY,
+		AngularVelocityZ: &pkt.AngularVelocityZ,
 
-		Yaw:   pkt.Yaw,
-		Pitch: pkt.Pitch,
-		Roll:  pkt.Roll,
+		Yaw:   &pkt.Yaw,
+		Pitch: &pkt.Pitch,
+		Roll:  &pkt.Roll,
 
-		PositionX: pkt.PositionX,
-		PositionY: pkt.PositionY,
-		PositionZ: pkt.PositionZ,
+		PositionX: &pkt.PositionX,
+		PositionY: &pkt.PositionY,
+		PositionZ: &pkt.PositionZ,
 
-		Power:  pkt.Power,
-		Torque: pkt.Torque,
-		Boost:  pkt.Boost,
+		Power:  &pkt.Power,
+		Torque: &pkt.Torque,
+		Boost:  &pkt.Boost,
 
-		Fuel: pkt.Fuel,
+		Fuel: &pkt.Fuel,
 
-		LapNumber:      int16(pkt.LapNumber),
-		RacePosition:   pkt.RacePosition,
-		BestLapTime:    pkt.BestLap,
-		LastLapTime:    pkt.LastLap,
-		CurrentLapTime: pkt.CurrentLap,
-		LapDistance:    pkt.DistanceTraveled,
+		TireTemp:         &tireTemp,
+		SuspensionTravel: &pkt.SuspensionTravelMeters,
+		WheelSpeed:       &pkt.WheelRotationSpeed,
+		SlipRatio:        &pkt.TireSlipRatio,
+		SlipAngle:        &pkt.TireSlipAngle,
 
-		CarClass: pkt.CarClass,
-		CarIndex: pkt.CarOrdinal,
+		LapNumber:      &lapNumber,
+		RacePosition:   &pkt.RacePosition,
+		BestLapTime:    &pkt.BestLap,
+		LastLapTime:    &pkt.LastLap,
+		CurrentLapTime: &pkt.CurrentLap,
+		LapDistance:    &pkt.DistanceTraveled,
+
+		CarClass: &pkt.CarClass,
+		CarIndex: &pkt.CarOrdinal,
 	}
-
-	// Convert tire temperatures from Fahrenheit to Celsius
-	for i := 0; i < 4; i++ {
-		frame.TireTemp[i] = fahrenheitToCelsius(pkt.TireTemp[i])
-	}
-
-	frame.SuspensionTravel = pkt.SuspensionTravelMeters
-	frame.WheelSpeed = pkt.WheelRotationSpeed
-	frame.SlipRatio = pkt.TireSlipRatio
-	frame.SlipAngle = pkt.TireSlipAngle
-
-	return frame
 }
 
 // normalizeGear converts Forza gear encoding to unified encoding.

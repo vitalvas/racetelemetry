@@ -69,9 +69,9 @@ func TestSource_Run(t *testing.T) {
 
 		select {
 		case frame := <-out:
-			assert.True(t, frame.IsRaceOn)
-			assert.Equal(t, float32(5000.0), frame.EngineRPM)
-			assert.Equal(t, float32(30.0), frame.Speed)
+			assert.True(t, *frame.IsRaceOn)
+			assert.Equal(t, float32(5000.0), *frame.EngineRPM)
+			assert.Equal(t, float32(30.0), *frame.Speed)
 		case <-ctx.Done():
 			t.Fatal("timeout waiting for frame")
 		}

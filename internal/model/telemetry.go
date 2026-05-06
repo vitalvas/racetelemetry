@@ -3,92 +3,74 @@ package model
 import "time"
 
 // TelemetryFrame represents a single frame of normalized telemetry data.
-// This is the superset of fields from all supported racing game sources,
-// normalized to common units and conventions.
+// Pointer fields indicate data that may or may not be available from the source.
+// A nil pointer means the source does not provide this field.
 type TelemetryFrame struct {
-	Timestamp time.Time
+	Timestamp  time.Time `json:"timestamp"`
+	SourceName string    `json:"source_name"`
+	SourceType string    `json:"source_type"`
 
-	// Session state
-	IsRaceOn bool
+	IsRaceOn *bool `json:"is_race_on,omitempty"`
 
-	// Engine
-	EngineRPM     float32
-	EngineMaxRPM  float32
-	EngineIdleRPM float32
+	EngineRPM     *float32 `json:"engine_rpm,omitempty"`
+	EngineMaxRPM  *float32 `json:"engine_max_rpm,omitempty"`
+	EngineIdleRPM *float32 `json:"engine_idle_rpm,omitempty"`
 
-	// Drivetrain
-	// Gear: -1=Reverse, 0=Neutral, 1+=forward gears
-	Gear     int8
-	NumGears int8
-	// Speed in meters per second
-	Speed float32
-	// Throttle 0.0-1.0
-	Throttle float32
-	// Brake 0.0-1.0
-	Brake float32
-	// Clutch 0.0-1.0
-	Clutch float32
-	// HandBrake 0.0-1.0
-	HandBrake float32
-	// Steer -1.0 (left) to 1.0 (right)
-	Steer float32
+	Gear      *int8    `json:"gear,omitempty"`
+	NumGears  *int8    `json:"num_gears,omitempty"`
+	Speed     *float32 `json:"speed,omitempty"`
+	Throttle  *float32 `json:"throttle,omitempty"`
+	Brake     *float32 `json:"brake,omitempty"`
+	Clutch    *float32 `json:"clutch,omitempty"`
+	HandBrake *float32 `json:"hand_brake,omitempty"`
+	Steer     *float32 `json:"steer,omitempty"`
 
-	// Physics - car local space
-	AccelerationX    float32 // m/s^2
-	AccelerationY    float32
-	AccelerationZ    float32
-	VelocityX        float32 // m/s
-	VelocityY        float32
-	VelocityZ        float32
-	AngularVelocityX float32 // rad/s
-	AngularVelocityY float32
-	AngularVelocityZ float32
+	AccelerationX    *float32 `json:"acceleration_x,omitempty"`
+	AccelerationY    *float32 `json:"acceleration_y,omitempty"`
+	AccelerationZ    *float32 `json:"acceleration_z,omitempty"`
+	VelocityX        *float32 `json:"velocity_x,omitempty"`
+	VelocityY        *float32 `json:"velocity_y,omitempty"`
+	VelocityZ        *float32 `json:"velocity_z,omitempty"`
+	AngularVelocityX *float32 `json:"angular_velocity_x,omitempty"`
+	AngularVelocityY *float32 `json:"angular_velocity_y,omitempty"`
+	AngularVelocityZ *float32 `json:"angular_velocity_z,omitempty"`
 
-	// Orientation - global space, radians
-	Yaw   float32
-	Pitch float32
-	Roll  float32
+	Yaw   *float32 `json:"yaw,omitempty"`
+	Pitch *float32 `json:"pitch,omitempty"`
+	Roll  *float32 `json:"roll,omitempty"`
 
-	// Position - global space, meters
-	PositionX float32
-	PositionY float32
-	PositionZ float32
+	PositionX *float32 `json:"position_x,omitempty"`
+	PositionY *float32 `json:"position_y,omitempty"`
+	PositionZ *float32 `json:"position_z,omitempty"`
 
-	// Power
-	Power  float32 // watts
-	Torque float32 // Nm
-	Boost  float32
+	Power  *float32 `json:"power,omitempty"`
+	Torque *float32 `json:"torque,omitempty"`
+	Boost  *float32 `json:"boost,omitempty"`
 
-	// Fuel - 0.0 to 1.0 (percentage of capacity)
-	Fuel         float32
-	FuelCapacity float32
+	Fuel         *float32 `json:"fuel,omitempty"`
+	FuelCapacity *float32 `json:"fuel_capacity,omitempty"`
 
-	// Temperatures - all Celsius
-	OilTemp   float32
-	WaterTemp float32
+	OilTemp   *float32 `json:"oil_temp,omitempty"`
+	WaterTemp *float32 `json:"water_temp,omitempty"`
 
-	// Per-wheel data ordered: [FL, FR, RL, RR]
-	TireTemp         [4]float32 // Celsius
-	SuspensionTravel [4]float32 // meters
-	WheelSpeed       [4]float32 // rad/s
-	SlipRatio        [4]float32
-	SlipAngle        [4]float32
+	TireTemp         *[4]float32 `json:"tire_temp,omitempty"`
+	SuspensionTravel *[4]float32 `json:"suspension_travel,omitempty"`
+	WheelSpeed       *[4]float32 `json:"wheel_speed,omitempty"`
+	SlipRatio        *[4]float32 `json:"slip_ratio,omitempty"`
+	SlipAngle        *[4]float32 `json:"slip_angle,omitempty"`
 
-	// Lap and race
-	LapNumber      int16
-	TotalLaps      int16
-	RacePosition   uint8
-	BestLapTime    float32 // seconds
-	LastLapTime    float32 // seconds
-	CurrentLapTime float32 // seconds
-	LapDistance    float32 // meters
+	LapNumber      *int16   `json:"lap_number,omitempty"`
+	TotalLaps      *int16   `json:"total_laps,omitempty"`
+	RacePosition   *uint8   `json:"race_position,omitempty"`
+	BestLapTime    *float32 `json:"best_lap_time,omitempty"`
+	LastLapTime    *float32 `json:"last_lap_time,omitempty"`
+	CurrentLapTime *float32 `json:"current_lap_time,omitempty"`
+	LapDistance    *float32 `json:"lap_distance,omitempty"`
 
-	// Car identity
-	CarClass int32
-	CarIndex int32
+	CarClass *int32 `json:"car_class,omitempty"`
+	CarIndex *int32 `json:"car_index,omitempty"`
 
-	// Gear ratios (where available)
-	GearRatios [8]float32
+	GearRatios *[8]float32 `json:"gear_ratios,omitempty"`
 }
 
 // Wheel index constants.
@@ -98,3 +80,8 @@ const (
 	WheelRL = 2
 	WheelRR = 3
 )
+
+// Ptr creates a pointer to the given value.
+func Ptr[T any](v T) *T {
+	return &v
+}

@@ -77,6 +77,26 @@ func (s *Sink) push(ctx context.Context, frame *model.TelemetryFrame) error {
 	return nil
 }
 
+func val[T any](p *T) T {
+	if p != nil {
+		return *p
+	}
+
+	var zero T
+
+	return zero
+}
+
+func valArr4[T any](p *[4]T) [4]T {
+	if p != nil {
+		return *p
+	}
+
+	var zero [4]T
+
+	return zero
+}
+
 func formatLineProtocol(frame *model.TelemetryFrame) string {
 	ts := frame.Timestamp.UnixNano()
 	if ts <= 0 {
@@ -92,44 +112,50 @@ func formatLineProtocol(frame *model.TelemetryFrame) string {
 }
 
 func writeTelemetryLine(b *strings.Builder, frame *model.TelemetryFrame, ts int64) {
-	b.WriteString("telemetry ")
-	fmt.Fprintf(b, "is_race_on=%t,", frame.IsRaceOn)
-	fmt.Fprintf(b, "engine_rpm=%.2f,", frame.EngineRPM)
-	fmt.Fprintf(b, "engine_max_rpm=%.2f,", frame.EngineMaxRPM)
-	fmt.Fprintf(b, "speed=%.4f,", frame.Speed)
-	fmt.Fprintf(b, "throttle=%.4f,", frame.Throttle)
-	fmt.Fprintf(b, "brake=%.4f,", frame.Brake)
-	fmt.Fprintf(b, "clutch=%.4f,", frame.Clutch)
-	fmt.Fprintf(b, "steer=%.4f,", frame.Steer)
-	fmt.Fprintf(b, "gear=%di,", frame.Gear)
-	fmt.Fprintf(b, "boost=%.4f,", frame.Boost)
-	fmt.Fprintf(b, "fuel=%.4f,", frame.Fuel)
-	fmt.Fprintf(b, "position_x=%.4f,", frame.PositionX)
-	fmt.Fprintf(b, "position_y=%.4f,", frame.PositionY)
-	fmt.Fprintf(b, "position_z=%.4f,", frame.PositionZ)
-	fmt.Fprintf(b, "yaw=%.6f,", frame.Yaw)
-	fmt.Fprintf(b, "pitch=%.6f,", frame.Pitch)
-	fmt.Fprintf(b, "roll=%.6f,", frame.Roll)
-	fmt.Fprintf(b, "lap_number=%di,", frame.LapNumber)
-	fmt.Fprintf(b, "race_position=%di,", frame.RacePosition)
-	fmt.Fprintf(b, "best_lap_time=%.3f,", frame.BestLapTime)
-	fmt.Fprintf(b, "last_lap_time=%.3f,", frame.LastLapTime)
-	fmt.Fprintf(b, "current_lap_time=%.3f,", frame.CurrentLapTime)
-	fmt.Fprintf(b, "oil_temp=%.1f,", frame.OilTemp)
-	fmt.Fprintf(b, "water_temp=%.1f", frame.WaterTemp)
+	fmt.Fprintf(b, "telemetry,source_name=%s,source_type=%s ", frame.SourceName, frame.SourceType)
+	fmt.Fprintf(b, "is_race_on=%t,", val(frame.IsRaceOn))
+	fmt.Fprintf(b, "engine_rpm=%.2f,", val(frame.EngineRPM))
+	fmt.Fprintf(b, "engine_max_rpm=%.2f,", val(frame.EngineMaxRPM))
+	fmt.Fprintf(b, "speed=%.4f,", val(frame.Speed))
+	fmt.Fprintf(b, "throttle=%.4f,", val(frame.Throttle))
+	fmt.Fprintf(b, "brake=%.4f,", val(frame.Brake))
+	fmt.Fprintf(b, "clutch=%.4f,", val(frame.Clutch))
+	fmt.Fprintf(b, "steer=%.4f,", val(frame.Steer))
+	fmt.Fprintf(b, "gear=%di,", val(frame.Gear))
+	fmt.Fprintf(b, "boost=%.4f,", val(frame.Boost))
+	fmt.Fprintf(b, "fuel=%.4f,", val(frame.Fuel))
+	fmt.Fprintf(b, "position_x=%.4f,", val(frame.PositionX))
+	fmt.Fprintf(b, "position_y=%.4f,", val(frame.PositionY))
+	fmt.Fprintf(b, "position_z=%.4f,", val(frame.PositionZ))
+	fmt.Fprintf(b, "yaw=%.6f,", val(frame.Yaw))
+	fmt.Fprintf(b, "pitch=%.6f,", val(frame.Pitch))
+	fmt.Fprintf(b, "roll=%.6f,", val(frame.Roll))
+	fmt.Fprintf(b, "lap_number=%di,", val(frame.LapNumber))
+	fmt.Fprintf(b, "race_position=%di,", val(frame.RacePosition))
+	fmt.Fprintf(b, "best_lap_time=%.3f,", val(frame.BestLapTime))
+	fmt.Fprintf(b, "last_lap_time=%.3f,", val(frame.LastLapTime))
+	fmt.Fprintf(b, "current_lap_time=%.3f,", val(frame.CurrentLapTime))
+	fmt.Fprintf(b, "oil_temp=%.1f,", val(frame.OilTemp))
+	fmt.Fprintf(b, "water_temp=%.1f", val(frame.WaterTemp))
 	fmt.Fprintf(b, " %d\n", ts)
 }
 
 func writeTireLines(b *strings.Builder, frame *model.TelemetryFrame, ts int64) {
 	wheelNames := [4]string{"fl", "fr", "rl", "rr"}
 
+	tireTemp := valArr4(frame.TireTemp)
+	suspTravel := valArr4(frame.SuspensionTravel)
+	wheelSpeed := valArr4(frame.WheelSpeed)
+	slipRatio := valArr4(frame.SlipRatio)
+	slipAngle := valArr4(frame.SlipAngle)
+
 	for i, name := range wheelNames {
-		fmt.Fprintf(b, "tire,wheel=%s ", name)
-		fmt.Fprintf(b, "temp=%.1f,", frame.TireTemp[i])
-		fmt.Fprintf(b, "suspension=%.4f,", frame.SuspensionTravel[i])
-		fmt.Fprintf(b, "wheel_speed=%.4f,", frame.WheelSpeed[i])
-		fmt.Fprintf(b, "slip_ratio=%.4f,", frame.SlipRatio[i])
-		fmt.Fprintf(b, "slip_angle=%.4f", frame.SlipAngle[i])
+		fmt.Fprintf(b, "tire,source_name=%s,source_type=%s,wheel=%s ", frame.SourceName, frame.SourceType, name)
+		fmt.Fprintf(b, "temp=%.1f,", tireTemp[i])
+		fmt.Fprintf(b, "suspension=%.4f,", suspTravel[i])
+		fmt.Fprintf(b, "wheel_speed=%.4f,", wheelSpeed[i])
+		fmt.Fprintf(b, "slip_ratio=%.4f,", slipRatio[i])
+		fmt.Fprintf(b, "slip_angle=%.4f", slipAngle[i])
 		fmt.Fprintf(b, " %d\n", ts)
 	}
 }

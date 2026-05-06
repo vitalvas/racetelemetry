@@ -44,7 +44,7 @@ func TestSink_Run(t *testing.T) {
 		s := &Sink{}
 
 		in := make(chan model.TelemetryFrame, 1)
-		in <- model.TelemetryFrame{IsRaceOn: true}
+		in <- model.TelemetryFrame{IsRaceOn: model.Ptr(true)}
 		close(in)
 
 		err := s.Run(context.Background(), in)

@@ -59,7 +59,7 @@ func (s *mockSink) getReceived() []model.TelemetryFrame {
 func TestPipeline_SingleSourceSingleSink(t *testing.T) {
 	source := &mockSource{
 		name:   "src1",
-		frames: []model.TelemetryFrame{{EngineRPM: 5000}, {EngineRPM: 6000}},
+		frames: []model.TelemetryFrame{{EngineRPM: model.Ptr(float32(5000))}, {EngineRPM: model.Ptr(float32(6000))}},
 	}
 	sink := &mockSink{}
 
@@ -79,14 +79,14 @@ func TestPipeline_SingleSourceSingleSink(t *testing.T) {
 
 	received := sink.getReceived()
 	assert.Len(t, received, 2)
-	assert.Equal(t, float32(5000), received[0].EngineRPM)
-	assert.Equal(t, float32(6000), received[1].EngineRPM)
+	assert.Equal(t, float32(5000), *received[0].EngineRPM)
+	assert.Equal(t, float32(6000), *received[1].EngineRPM)
 }
 
 func TestPipeline_FanOutToMultipleSinks(t *testing.T) {
 	source := &mockSource{
 		name:   "src1",
-		frames: []model.TelemetryFrame{{EngineRPM: 5000}, {EngineRPM: 6000}, {EngineRPM: 7000}},
+		frames: []model.TelemetryFrame{{EngineRPM: model.Ptr(float32(5000))}, {EngineRPM: model.Ptr(float32(6000))}, {EngineRPM: model.Ptr(float32(7000))}},
 	}
 	sink1 := &mockSink{}
 	sink2 := &mockSink{}
@@ -113,8 +113,8 @@ func TestPipeline_FanOutToMultipleSinks(t *testing.T) {
 }
 
 func TestPipeline_RoutedSinks(t *testing.T) {
-	srcA := &mockSource{name: "srcA", frames: []model.TelemetryFrame{{EngineRPM: 1000}}}
-	srcB := &mockSource{name: "srcB", frames: []model.TelemetryFrame{{EngineRPM: 2000}}}
+	srcA := &mockSource{name: "srcA", frames: []model.TelemetryFrame{{EngineRPM: model.Ptr(float32(1000))}}}
+	srcB := &mockSource{name: "srcB", frames: []model.TelemetryFrame{{EngineRPM: model.Ptr(float32(2000))}}}
 
 	sinkAll := &mockSink{}
 	sinkBOnly := &mockSink{}
@@ -139,17 +139,17 @@ func TestPipeline_RoutedSinks(t *testing.T) {
 	allReceived := sinkAll.getReceived()
 	assert.Len(t, allReceived, 2)
 
-	rpms := []float32{allReceived[0].EngineRPM, allReceived[1].EngineRPM}
+	rpms := []float32{*allReceived[0].EngineRPM, *allReceived[1].EngineRPM}
 	assert.Contains(t, rpms, float32(1000))
 	assert.Contains(t, rpms, float32(2000))
 
 	bOnlyReceived := sinkBOnly.getReceived()
 	assert.Len(t, bOnlyReceived, 1)
-	assert.Equal(t, float32(2000), bOnlyReceived[0].EngineRPM)
+	assert.Equal(t, float32(2000), *bOnlyReceived[0].EngineRPM)
 }
 
 func TestPipeline_ContextCancel(t *testing.T) {
-	source := &mockSource{name: "src1", frames: []model.TelemetryFrame{{IsRaceOn: true}}}
+	source := &mockSource{name: "src1", frames: []model.TelemetryFrame{{IsRaceOn: model.Ptr(true)}}}
 	sink := &mockSink{}
 
 	pipe := New(

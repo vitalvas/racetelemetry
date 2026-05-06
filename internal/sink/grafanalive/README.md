@@ -25,11 +25,11 @@ Two measurements are sent per frame:
 
 ### `telemetry`
 
-Car-level data: RPM, speed, throttle, brake, clutch, steer, gear, boost, fuel, position, orientation, lap info, temperatures.
+Car-level data tagged by `source_name` and `source_type`: RPM, speed, throttle, brake, clutch, steer, gear, boost, fuel, position, orientation, lap info, temperatures.
 
 ### `tire`
 
-Per-wheel data tagged by `wheel` (fl, fr, rl, rr): temperature, suspension travel, wheel speed, slip ratio, slip angle.
+Per-wheel data tagged by `source_name`, `source_type`, and `wheel` (fl, fr, rl, rr): temperature, suspension travel, wheel speed, slip ratio, slip angle.
 
 ## Grafana Channels
 

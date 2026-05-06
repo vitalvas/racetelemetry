@@ -23,8 +23,8 @@ func TestSink_Run(t *testing.T) {
 		s := newSink(&buf)
 
 		in := make(chan model.TelemetryFrame, 2)
-		in <- model.TelemetryFrame{IsRaceOn: true, EngineRPM: 5000, Speed: 30.0}
-		in <- model.TelemetryFrame{IsRaceOn: true, EngineRPM: 6000, Speed: 40.0}
+		in <- model.TelemetryFrame{IsRaceOn: model.Ptr(true), EngineRPM: model.Ptr(float32(5000)), Speed: model.Ptr(float32(30.0))}
+		in <- model.TelemetryFrame{IsRaceOn: model.Ptr(true), EngineRPM: model.Ptr(float32(6000)), Speed: model.Ptr(float32(40.0))}
 		close(in)
 
 		err := s.Run(context.Background(), in)
@@ -35,13 +35,13 @@ func TestSink_Run(t *testing.T) {
 
 		var frame1 model.TelemetryFrame
 		require.NoError(t, json.Unmarshal(lines[0], &frame1))
-		assert.Equal(t, float32(5000), frame1.EngineRPM)
-		assert.Equal(t, float32(30.0), frame1.Speed)
-		assert.True(t, frame1.IsRaceOn)
+		assert.Equal(t, float32(5000), *frame1.EngineRPM)
+		assert.Equal(t, float32(30.0), *frame1.Speed)
+		assert.True(t, *frame1.IsRaceOn)
 
 		var frame2 model.TelemetryFrame
 		require.NoError(t, json.Unmarshal(lines[1], &frame2))
-		assert.Equal(t, float32(6000), frame2.EngineRPM)
+		assert.Equal(t, float32(6000), *frame2.EngineRPM)
 	})
 
 	t.Run("stops on context cancel", func(t *testing.T) {
@@ -79,13 +79,13 @@ func TestSink_Run(t *testing.T) {
 
 func BenchmarkSink_Run(b *testing.B) {
 	frame := model.TelemetryFrame{
-		IsRaceOn:  true,
-		EngineRPM: 5000,
-		Speed:     30.0,
-		Throttle:  0.75,
-		Brake:     0.5,
-		Gear:      3,
-		TireTemp:  [4]float32{85.0, 86.0, 82.0, 83.0},
+		IsRaceOn:  model.Ptr(true),
+		EngineRPM: model.Ptr(float32(5000)),
+		Speed:     model.Ptr(float32(30.0)),
+		Throttle:  model.Ptr(float32(0.75)),
+		Brake:     model.Ptr(float32(0.5)),
+		Gear:      model.Ptr(int8(3)),
+		TireTemp:  &[4]float32{85.0, 86.0, 82.0, 83.0},
 	}
 
 	var buf bytes.Buffer

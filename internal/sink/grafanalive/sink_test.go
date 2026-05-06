@@ -39,13 +39,15 @@ func TestSink_Run(t *testing.T) {
 
 		in := make(chan model.TelemetryFrame, 1)
 		in <- model.TelemetryFrame{
-			Timestamp: time.Unix(1700000000, 0),
-			IsRaceOn:  true,
-			EngineRPM: 5000,
-			Speed:     30.0,
-			Throttle:  0.75,
-			Gear:      3,
-			TireTemp:  [4]float32{85.0, 86.0, 82.0, 83.0},
+			Timestamp:  time.Unix(1700000000, 0),
+			SourceName: "test_src",
+			SourceType: "forza",
+			IsRaceOn:   model.Ptr(true),
+			EngineRPM:  model.Ptr(float32(5000)),
+			Speed:      model.Ptr(float32(30.0)),
+			Throttle:   model.Ptr(float32(0.75)),
+			Gear:       model.Ptr(int8(3)),
+			TireTemp:   &[4]float32{85.0, 86.0, 82.0, 83.0},
 		}
 		close(in)
 
@@ -53,17 +55,17 @@ func TestSink_Run(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, "Bearer my-api-key", receivedAuth)
-		assert.Contains(t, receivedBody, "telemetry ")
+		assert.Contains(t, receivedBody, "telemetry,source_name=test_src,source_type=forza ")
 		assert.Contains(t, receivedBody, "engine_rpm=5000.00")
 		assert.Contains(t, receivedBody, "speed=30.0000")
 		assert.Contains(t, receivedBody, "gear=3i")
 		assert.Contains(t, receivedBody, "is_race_on=true")
 
-		// Per-wheel data
-		assert.Contains(t, receivedBody, "tire,wheel=fl temp=85.0")
-		assert.Contains(t, receivedBody, "tire,wheel=fr temp=86.0")
-		assert.Contains(t, receivedBody, "tire,wheel=rl temp=82.0")
-		assert.Contains(t, receivedBody, "tire,wheel=rr temp=83.0")
+		// Per-wheel data with source tags
+		assert.Contains(t, receivedBody, "tire,source_name=test_src,source_type=forza,wheel=fl temp=85.0")
+		assert.Contains(t, receivedBody, "tire,source_name=test_src,source_type=forza,wheel=fr temp=86.0")
+		assert.Contains(t, receivedBody, "tire,source_name=test_src,source_type=forza,wheel=rl temp=82.0")
+		assert.Contains(t, receivedBody, "tire,source_name=test_src,source_type=forza,wheel=rr temp=83.0")
 	})
 
 	t.Run("handles server error gracefully", func(t *testing.T) {
@@ -75,7 +77,7 @@ func TestSink_Run(t *testing.T) {
 		s := New(fmt.Sprintf("%s/api/live/push/race", server.URL), "key")
 
 		in := make(chan model.TelemetryFrame, 1)
-		in <- model.TelemetryFrame{IsRaceOn: true, EngineRPM: 5000}
+		in <- model.TelemetryFrame{IsRaceOn: model.Ptr(true), EngineRPM: model.Ptr(float32(5000))}
 		close(in)
 
 		// Should not return error - just logs debug
@@ -118,35 +120,37 @@ func TestSink_Run(t *testing.T) {
 
 func TestFormatLineProtocol(t *testing.T) {
 	frame := &model.TelemetryFrame{
-		Timestamp: time.Unix(1700000000, 0),
-		IsRaceOn:  true,
-		EngineRPM: 5000,
-		Speed:     30.5,
-		Gear:      3,
-		TireTemp:  [4]float32{85.0, 86.0, 82.0, 83.0},
+		Timestamp:  time.Unix(1700000000, 0),
+		SourceName: "my_forza",
+		SourceType: "forza",
+		IsRaceOn:   model.Ptr(true),
+		EngineRPM:  model.Ptr(float32(5000)),
+		Speed:      model.Ptr(float32(30.5)),
+		Gear:       model.Ptr(int8(3)),
+		TireTemp:   &[4]float32{85.0, 86.0, 82.0, 83.0},
 	}
 
 	line := formatLineProtocol(frame)
 	lines := strings.Split(strings.TrimSpace(line), "\n")
 
-	assert.Len(t, lines, 5) // 1 telemetry + 4 tire measurements
-	assert.True(t, strings.HasPrefix(lines[0], "telemetry "))
-	assert.True(t, strings.HasPrefix(lines[1], "tire,wheel=fl "))
-	assert.True(t, strings.HasPrefix(lines[2], "tire,wheel=fr "))
-	assert.True(t, strings.HasPrefix(lines[3], "tire,wheel=rl "))
-	assert.True(t, strings.HasPrefix(lines[4], "tire,wheel=rr "))
+	assert.Len(t, lines, 5)
+	assert.True(t, strings.HasPrefix(lines[0], "telemetry,source_name=my_forza,source_type=forza "))
+	assert.True(t, strings.HasPrefix(lines[1], "tire,source_name=my_forza,source_type=forza,wheel=fl "))
+	assert.True(t, strings.HasPrefix(lines[2], "tire,source_name=my_forza,source_type=forza,wheel=fr "))
+	assert.True(t, strings.HasPrefix(lines[3], "tire,source_name=my_forza,source_type=forza,wheel=rl "))
+	assert.True(t, strings.HasPrefix(lines[4], "tire,source_name=my_forza,source_type=forza,wheel=rr "))
 }
 
 func BenchmarkFormatLineProtocol(b *testing.B) {
 	frame := &model.TelemetryFrame{
 		Timestamp: time.Unix(1700000000, 0),
-		IsRaceOn:  true,
-		EngineRPM: 5000,
-		Speed:     30.0,
-		Throttle:  0.75,
-		Brake:     0.5,
-		Gear:      3,
-		TireTemp:  [4]float32{85.0, 86.0, 82.0, 83.0},
+		IsRaceOn:  model.Ptr(true),
+		EngineRPM: model.Ptr(float32(5000)),
+		Speed:     model.Ptr(float32(30.0)),
+		Throttle:  model.Ptr(float32(0.75)),
+		Brake:     model.Ptr(float32(0.5)),
+		Gear:      model.Ptr(int8(3)),
+		TireTemp:  &[4]float32{85.0, 86.0, 82.0, 83.0},
 	}
 
 	b.ResetTimer()

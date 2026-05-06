@@ -8,6 +8,8 @@ A telemetry pipeline for racing games. Receives telemetry data from game sources
 - Input routing: each sink subscribes to specific sources
 - Auto-detection of protocol versions
 - Unified internal telemetry model across all games
+- Each frame carries `source_name` (config key) and `source_type` (e.g. `forza`, `gt7`)
+- Pointer-based fields: `nil` means the source does not provide the data, `omitempty` in JSON output
 
 ## Supported Sources
 

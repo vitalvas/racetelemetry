@@ -79,12 +79,11 @@ func (p *Pipeline) Run(ctx context.Context) error {
 			defer fwdWg.Done()
 
 			for frame := range srcCh {
+				frame.SourceName = name
+				frame.SourceType = src.Name()
+
 				for _, ch := range targets {
-					select {
-					case ch <- frame:
-					case <-ctx.Done():
-						return
-					}
+					trySend(ctx, ch, frame)
 				}
 			}
 		}()
@@ -124,5 +123,29 @@ func (p *Pipeline) Run(ctx context.Context) error {
 		return err
 	default:
 		return nil
+	}
+}
+
+// trySend attempts a non-blocking send. If the channel is full,
+// it drops the oldest frame and sends the new one. For real-time
+// telemetry, fresh data is always more valuable than stale data.
+func trySend(ctx context.Context, ch chan model.TelemetryFrame, frame model.TelemetryFrame) {
+	select {
+	case ch <- frame:
+		return
+	case <-ctx.Done():
+		return
+	default:
+	}
+
+	// Channel full: drop oldest, send new
+	select {
+	case <-ch:
+	default:
+	}
+
+	select {
+	case ch <- frame:
+	case <-ctx.Done():
 	}
 }
